@@ -1,0 +1,26 @@
+{
+  "name": "knockout-virtual-grid",
+  "version": "1.0.0",
+  "description": "A virtualizing grid container for Knockout",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "karma start --single-run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jstclair/knockout-virtual-grid.git"
+  },
+  "keywords": [
+    "Knockout",
+    "Grid"
+  ],
+  "author": "John St. Clair <stclairjohn@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jstclair/knockout-virtual-grid/issues"
+  },
+  "homepage": "https://github.com/jstclair/knockout-virtual-grid"
+}
