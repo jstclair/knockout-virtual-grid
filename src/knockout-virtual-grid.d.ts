@@ -2,7 +2,7 @@ declare module VirtualGrid {
     export interface IVirtualGridRow<T> {
         css?: string[];
         columns: IVirtualGridColumn<T>[];
-        fixed-columns?: IVirtualGridFixedColumn<string>[];
+        fixedColumns?: IVirtualGridFixedColumn<string>[];
         format?: (value: T) => string;
         editable?: boolean;
     }
@@ -25,7 +25,8 @@ declare module VirtualGrid {
         metadata: T;
     }
 
-    export interface ISupportVirtualGridEditing<T> {
-        onEdit: (value: T, info: IVirtualGridCellInfo<T>) => boolean;
+    export interface ISupportVirtualGridEditing<T,K> {
+        onEdit: (value: T, info: IVirtualGridCellInfo<K>) => boolean;
+        onAfterEdit?: (previousValue: T, value: T, info: IVirtualGridCellInfo<K>, cell: HTMLElement) => void;
     }
 }
