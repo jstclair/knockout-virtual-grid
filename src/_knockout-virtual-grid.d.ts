@@ -1,12 +1,18 @@
 declare module VirtualGrid {
     export interface IVirtualGridBindingLayout {
+        rows?: KnockoutObservable<number>;
+        columns?: KnockoutObservable<number>;
+    }
+
+    export interface IVirtualGridBindingOffset {
         row?: KnockoutObservable<number>;
         column?: KnockoutObservable<number>;
     }
 
     export interface IKnockoutVirtualGridBindingParameters {
-        dataSource: KnockoutObservable<IVirtualGridRow<any>[]>;
-        offset?: IVirtualGridBindingLayout;
+        dataSource: KnockoutObservable<VirtualGrid.IVirtualGridRow<any>[]>;
+        offset?: IVirtualGridBindingOffset;
+        layout?: IVirtualGridBindingLayout;
         onEdit?: (value: any, info: IVirtualGridCellInfo<any>) => boolean;
         onAfterEdit?: (previousValue: any, value: any, info: IVirtualGridCellInfo<any>, cell: HTMLElement) => void;
     }
