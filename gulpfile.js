@@ -1,17 +1,33 @@
-var del = require('del'),
-    gulp = require('gulp'),
-    gulpLoadPlugins = require('gulp-load-plugins'),
-    plugins = gulpLoadPlugins();
+"use strict";
 
-gulp.task('clean', function(done) {
-    del(['./out/*.js', '.tmp/**', 'src/*.js', 'src/*.js.map'], function() {
-        done();
-    });
+var gulp = require('gulp'),
+    $ = require('gulp-load-plugins')(),
+    del = require('del'),
+    runSequence = require('run-sequence');
+
+var paths = {
+    out: './out/'
+};
+
+var AUTOPREFIXER_BROWSERS = [
+    'ie >= 10',
+    'ie_mob >= 10',
+    'ff >= 30',
+    'chrome >= 34',
+    'safari >= 7',
+    'opera >= 23',
+    'ios >= 7',
+    'android >= 4.4',
+    'bb >= 10'
+    ];
+
+gulp.task('clean', function() {
+    del(['./out/*', '.tmp/**', 'src/*.js', 'src/*.js.map'], { dot: true});
 });
 
-gulp.task('ts', ['clean'], function() {
+gulp.task('ts', function() {
     return gulp.src(['src/*.ts'])
-        .pipe(plugins.tsc({
+        .pipe($.tsc({
             module: 'amd',
             target: 'es5',
             emitError: false,
@@ -19,24 +35,53 @@ gulp.task('ts', ['clean'], function() {
             keepTree: false,
             outDir: './'
         }))
+        .on('error', console.error.bind(console))
         .pipe(gulp.dest('src'));
 });
 
-var OUT = './out/';
-
-gulp.task('dist', ['ts'], function() {
+gulp.task('js', ['ts'], function() {
     return gulp.src(['src/*.js'])
-        .pipe(plugins.concat('knockout-virtual-grid.js'))
-        .pipe(gulp.dest(OUT))
-        .pipe(plugins.uglify())
-        .pipe(plugins.rename({
+        .pipe($.concat('knockout-virtual-grid.js'))
+        .pipe(gulp.dest(paths.out))
+        .pipe($.uglify())
+        .pipe($.rename({
             extname: '.min.js'
         }))
-        .pipe(gulp.dest(OUT));
+        .pipe(gulp.dest(paths.out));
+});
+
+gulp.task('copy-typedefs', function() {
+    return gulp.src(['src/knockout-virtual-grid.d.ts'])
+        .pipe(gulp.dest(paths.out));
+});
+
+gulp.task('styles', function() {
+    return gulp.src(['styles/*.scss'])
+        .pipe($.sass({
+            precision: 10
+        }))
+        .on('error', console.error.bind(console))
+        .pipe($.autoprefixer({ browsers: AUTOPREFIXER_BROWSERS }))
+        .pipe(gulp.dest(paths.out))
+        .pipe($.csso())
+        .pipe($.rename({
+            extname: '.min.css'
+        }))
+        .pipe(gulp.dest(paths.out));
+});
+
+gulp.task('html', function() {
+    return gulp.src(['src/knockout-virtual-grid.html'])
+        .pipe(gulp.dest(paths.out));
 });
 
 gulp.task('watch', function() {
-    gulp.watch(['src/*.ts', 'src/*.d.ts'], ['dist']);
+    gulp.watch(['src/*.ts', 'src/*.d.ts'], ['js']);
+    gulp.watch(['src/*.html'], ['html']);
+    gulp.watch(['src/*.d.ts'], ['copy-typedefs']);
+    gulp.watch(['src/css/*.scss'], ['styles']);
 });
 
-gulp.task('default', ['watch', 'dist']);
+gulp.task('default', ['clean'], function(cb){
+    runSequence(['watch', 'js', 'html', 'copy-typedefs', 'styles'], cb);
+});
