@@ -1,14 +1,14 @@
-<table class="vg-table">
+<table class="vg-t table">
     <thead></thead>
     <tbody>
         <!-- ko foreach: virtualGridRow -->
-        <tr data-bind="css: rowCss">
+        <tr style="vg-r" data-bind="css: rowCss">
             <!-- ko foreach: $data.fixedColumns -->
-            <td data-bind="css: css, html: value"></td>
+            <td style="vg-c vg-f" data-bind="css: css, html: value"></td>
             <!-- /ko -->
 
             <!-- ko foreach: $data.columns -->
-            <td data-bind="css: css, html: $parent.format(value())"></td>
+            <td style="vg-c" data-bind="css: css, html: $parent.format(value())"></td>
             <!-- /ko -->
         </tr>
         <!-- /ko -->
