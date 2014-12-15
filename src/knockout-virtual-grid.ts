@@ -6,110 +6,62 @@ import ko = require('knockout');
 export var template: string = require('text!./knockout-virtual-grid.html');
 
 export class viewModel implements VirtualGrid.IKnockoutVirtualGrid {
+    public tableCss: KnockoutObservable<string>;
     public virtualGridRow: KnockoutObservableArray<VirtualGrid.IVirtualGridLayoutRow>;
-
-    public layout: {
-        columns: KnockoutObservable<number>;
-        rows: KnockoutObservable<number>;
-    }
-    public offset: {
-        column: KnockoutObservable<number>;
-        row: KnockoutObservable<number>;
-        changeTracker: KnockoutComputed<number[]>;
-    }
 
     private dataSource: KnockoutObservable<VirtualGrid.IVirtualGridRow<any>[]>;
     private subscriptions: any[];
+    private layout: LayoutOffsetHelper;
 
     constructor(params: VirtualGrid.IKnockoutVirtualGridBindingParameters) {
         console.log('[KnockoutVirtualGrid] %o', params);
-        if (!params) {
+        if (!params || !params.dataSource) {
             throw new Error('Invalid params');
         }
+        this.tableCss = ko.observable<string>(params.css || '');
         this.dataSource = params.dataSource;
 
-        if (params.layout) {
-            this.layout = {
-                columns: params.layout.columns || ko.observable(20),
-                rows: params.layout.rows || ko.observable(20)
-            }
+        var data = params.dataSource(),
+            init = this.initialize(data);
 
-        } else {
-            this.layout = {
-                columns: ko.observable(20).extend({ rateLimit: 0 }),
-                rows: ko.observable(20).extend({ rateLimit: 0 })
-            }
-        }
+        this.layout = new LayoutOffsetHelper(init.maxRows,
+                                             init.maxColumns,
+                                             params.offset,
+                                             params.layout);
 
-        if (params.offset) {
-            this.offset = {
-                column: params.offset.column.extend({ rateLimit: 0 }) || ko.observable(0).extend({ rateLimit: 0 }),
-                row: params.offset.row.extend({ rateLimit: 0 }) || ko.observable(0).extend({ rateLimit: 0 }),
-                changeTracker: ko.computed({
-                    read: () => {
-                        var r = this.offset.row(),
-                            c = this.offset.column();
-                        return [r, c];
-                    },
-                    deferEvaluation: true,
-                    pure: true,
-                    owner: this
-                })
-            }
-        } else {
-            this.offset = {
-                column: ko.observable(0).extend({ rateLimit: 0 }),
-                row: ko.observable(0).extend({ rateLimit: 0 }),
-                changeTracker: ko.computed({
-                    read: () => {
-                        var r = this.offset.row(),
-                            c = this.offset.column();
-                        return [r, c];
-                    },
-                    deferEvaluation: true,
-                    pure: true,
-                    owner: this
-                })
-            }
-        }
+        var initialRows = this.convert(data);
 
-
-
-        this.initialize();
-
-        var data = this.dataSource(),
-            initialRows = this.convert(data);
-
+        this.virtualGridRow = ko.observableArray([]).extend({ rateLimit: 0 });
         this.virtualGridRow(initialRows);
-
         this.render();
 
         this.subscriptions = [
-            this.offset.changeTracker.subscribe(() => this.render())
+            this.layout.changed.subscribe(() => this.render()),
+            this.dataSource.subscribe(() => this.render())
         ];
     }
 
     private onNewData(rows: VirtualGrid.IVirtualGridRow<any>[]) {
+        var init = this.initialize(rows);
+        // if max is lower than existing visible, then we have to re-init
+        if (init.maxRows < this.layout.rows() || init.maxColumns < this.layout.columns()) {
+            console.log('[VG] re-initializing');
+        }
+        else {
+            this.render();
+        }
 
     }
 
-    private initialize() {
-        var rows = this.layout.rows(),
-            columns = this.layout.columns(),
-            hasData = this.dataSource && this.dataSource.peek().length > 0,
-            existingData = hasData ? this.dataSource.peek() : [];
+    private initialize(data: VirtualGrid.IVirtualGridRow<any>[]) {
         // for now, assume grid is rectangular
-        if (hasData) {
-            rows = Math.min(rows, existingData.length);
-            columns = Math.min(columns, existingData[0].columns.length);
-        }
+        var result: any = {
+            maxRows: data.length,
+            maxColumns: data[0].columns.length
+        };
 
-        this.layout.rows(rows);
-        this.layout.columns(columns);
-
-        console.log('[VG] initialize - rows: %d, columns: %d', rows, columns);
-
-        this.virtualGridRow = ko.observableArray([]).extend({ rateLimit: 0 });
+        console.log('[VG] initialize: %o', result);
+        return result;
     }
 
     /*
@@ -138,10 +90,10 @@ export class viewModel implements VirtualGrid.IKnockoutVirtualGrid {
             r: VirtualGrid.IVirtualGridRow<any>,
             c: VirtualGrid.IVirtualGridColumn<any>,
             columns: VirtualGrid.IVirtualGridLayoutColumn<any>[],
-            startRow: number = Math.min(this.offset.column(), maxRows),
-            startCol: number = Math.min(this.offset.row(), maxColumns);
+            startRow: number = Math.min(this.layout.column(), maxRows),
+            startCol: number = Math.min(this.layout.row(), maxColumns);
 
-        console.log('[VG] convert: max rows: %d, max cols: %d, i: %d, j: %d', maxRows, maxColumns, i, j);
+        console.log('[VG] convert: max rows: %d, max cols: %d, i: %d, j: %d', maxRows, maxColumns, startRow, startCol);
 
 
         for (var i = startRow; i < maxRows; i++) {
@@ -182,16 +134,20 @@ export class viewModel implements VirtualGrid.IKnockoutVirtualGrid {
 
         if (!source || source.length === 0) return;
 
-        var rowOffset = this.offset.row(),
-            colOffset = this.offset.column(),
-            startRow = Math.min(rowOffset, source.length - rowOffset),
-            startCol = Math.min(colOffset, source[0].columns.length - colOffset),
-            maxRows = Math.min(this.layout.rows(), source.length),
-            maxColumns = Math.min(this.layout.columns(), source[0].columns.length);
+        var rowOffset = this.layout.row(),
+            colOffset = this.layout.column(),
 
-        console.log('[VG] render: max rows: %d, max cols: %d', maxRows, maxColumns);
+            startRow = Math.min(rowOffset, source.length - this.layout.rows()),
+            startCol = Math.min(colOffset, source[0].columns.length - this.layout.columns()),
 
-        for (var targetRowIndex = 0, i = startRow; i < maxRows; i++, targetRowIndex++) {
+            endRow = Math.min(startRow + this.layout.rows(), source.length),
+            endColumn = Math.min(startCol + this.layout.columns(), source[0].columns.length);
+
+        console.log('[VG] render: source - rows: %d, cols: %d', source.length, source[0].columns.length);
+        console.log('[VG] render: start - row: %d, col: %d', startRow, startCol);
+        console.log('[VG] render: end   - row: %d, col: %d', endRow, endColumn);
+
+        for (var targetRowIndex = 0, i = startRow; i < endRow; i++, targetRowIndex++) {
             // copy values from source to target
             var r = source[i],
                 targetRow = target[targetRowIndex],
@@ -199,7 +155,7 @@ export class viewModel implements VirtualGrid.IKnockoutVirtualGrid {
 
             targetRow.rowCss(r.css && r.css.length > 0 ? r.css.join(' ') : '');
 
-            for(var targetColumnIndex = 0, j = startCol; j < maxColumns; j++, targetColumnIndex++){
+            for(var targetColumnIndex = 0, j = startCol; j < endColumn; j++, targetColumnIndex++){
                 // copy values from source[i].columns[j] to target
                 var c = r.columns[j],
                     targetColumn = targetColumns[targetColumnIndex];
@@ -216,6 +172,124 @@ export class viewModel implements VirtualGrid.IKnockoutVirtualGrid {
             var sub = this.subscriptions[i];
             if (sub && sub.dispose) sub.dispose();
         }
-        this.offset.changeTracker.dispose();
+        this.layout.dispose();
+    }
+}
+
+export class LayoutOffsetHelper {
+    public column: KnockoutComputed<number>;
+    public row: KnockoutComputed<number>;
+    public columns: KnockoutComputed<number>;
+    public rows: KnockoutComputed<number>;
+    public changed: KnockoutComputed<number[]>;
+
+    constructor(public maxRows: number, public maxColumns: number,
+                offset?: VirtualGrid.IVirtualGridBindingOffset,
+                layout?: VirtualGrid.IVirtualGridBindingLayout) {
+
+        var offsets: KnockoutObservable<number>[] = [],
+            val: number;
+
+        //[0]
+        if (offset && offset.row) {
+            offsets.push(offset.row);
+        } else {
+            offsets.push(ko.observable(0));
+        }
+        //[1]
+        if (offset && offset.column) {
+            offsets.push(offset.column);
+        } else {
+            offsets.push(ko.observable(0));
+        }
+        //[2]
+        if (layout && layout.rows) {
+            offsets.push(layout.rows);
+        } else {
+            // ensure that layout rows are <= max
+            val = Math.min(25, this.maxRows);
+            offsets.push(ko.observable(val));
+        }
+        //[3]
+        if (layout && layout.columns) {
+            offsets.push(layout.columns);
+        } else {
+            // ensure that layout columns are <= max
+            val = Math.min(35, this.maxColumns);
+            offsets.push(ko.observable(val));
+        }
+
+        this.row = ko.computed({
+            read: () => {
+                var v = offsets[0],
+                    val = v();
+                console.log('[VG] layout - row: %d', val);
+                return val;
+            },
+            write: (val: number) => {
+                var min = this.maxRows - this.rows();
+                if (val < 0 || isNaN(val)){
+                    offsets[0](0);
+                } else if (val >= 0 && val < min + 1) {
+                    offsets[0](val);
+                } else {
+                    offsets[0](min);
+                }
+            },
+            deferEvaluation: true,
+            owner: this
+        }).extend({ rateLimit: 0 });
+
+        this.column = ko.computed({
+            read: () => {
+                return offsets[1]();
+            },
+            write: (val: number) => {
+                // can't advance beyond the starting visible column
+                var min = this.maxColumns - this.columns();
+                if (val < 0 || isNaN(val)){
+                    offsets[1](0);
+                } else if (val >= 0 && val < min + 1) {
+                    offsets[1](val);
+                } else {
+                    offsets[1](min);
+                }
+            },
+            deferEvaluation: true,
+            owner: this
+        }).extend({ rateLimit: 0});
+
+        this.rows = ko.computed({
+            read: () => {
+                return offsets[2]();
+            },
+            deferEvaluation: true,
+            owner: this
+        }).extend({ rateLimit: 0});
+
+        this.columns = ko.computed({
+            read: () => {
+                return offsets[3]();
+            },
+            deferEvaluation: true,
+            owner: this
+        }).extend({ rateLimit: 0});
+
+        this.changed = ko.computed({
+            read: () => {
+                return [this.row(), this.column(), this.rows(), this.columns()];
+            },
+            owner: this,
+            pure: true,
+            deferEvaluation: true
+        }).extend({ rateLimit: 0 });
+    }
+
+    dispose() {
+        this.row.dispose();
+        this.column.dispose();
+        this.rows.dispose();
+        this.columns.dispose();
+        this.changed.dispose();
     }
 }

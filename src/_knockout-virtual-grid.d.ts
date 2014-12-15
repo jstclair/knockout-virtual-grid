@@ -11,6 +11,7 @@ declare module VirtualGrid {
 
     export interface IKnockoutVirtualGridBindingParameters {
         dataSource: KnockoutObservable<VirtualGrid.IVirtualGridRow<any>[]>;
+        css: string;
         offset?: IVirtualGridBindingOffset;
         layout?: IVirtualGridBindingLayout;
         onEdit?: (value: any, info: IVirtualGridCellInfo<any>) => boolean;
@@ -37,17 +38,9 @@ declare module VirtualGrid {
         editable: KnockoutObservable<boolean>;
     }
 
-
     export interface IKnockoutVirtualGrid {
         virtualGridRow: KnockoutObservableArray<VirtualGrid.IVirtualGridLayoutRow>;
-        layout: {
-            columns: KnockoutObservable<number>;
-            rows: KnockoutObservable<number>;
-        };
-        offset: {
-            column: KnockoutObservable<number>;
-            row: KnockoutObservable<number>;
-        };
+        tableCss: KnockoutObservable<string>;
 
         dispose: () => void;
     }
