@@ -1,9 +1,10 @@
 .vg-t {
     font-size: 12px;
     font-family: Tahoma;
-    
-    .vg-r {
+    // any remaining table styles to go here
 
+    .vg-r {
+        // row styles to go here
     }
 
     .vg-c {
@@ -12,9 +13,10 @@
         min-height: 23px;
         height: 23px;
         padding: 2px;
+        // any remaining cell styles to go here
     }
 
     .vg-f {
-
+        // fixed-cell styles to go here
     }
 }
