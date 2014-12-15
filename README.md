@@ -7,9 +7,8 @@ To publish, run:
 
 ```shell
 git add bower.json
-git add -f out\knockout-virtual-grid.js
-git add -f out\knockout-virtual-grid.min.js
-git checkout head
+git add -f out/*
+git checkout HEAD
 git commit -m "Version {version} for distribution"
 git tag -a v{version} -m "Add tag v{verson}"
 git checkout master
