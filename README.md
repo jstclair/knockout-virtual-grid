@@ -70,7 +70,7 @@ To publish, run:
 ```shell
 git add bower.json
 git add -f out/*
-git checkout HEAD
+git checkout head
 git commit -m "Version {version} for distribution"
 git tag -a v{version} -m "Add tag v{verson}"
 git checkout master
