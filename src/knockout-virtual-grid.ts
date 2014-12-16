@@ -29,7 +29,7 @@ export class viewModel implements VirtualGrid.IKnockoutVirtualGrid {
                                              params.offset,
                                              params.layout);
 
-        var initialRows = this.convert(data);
+        var initialRows = this.initialize(data);
 
         this.virtualGridRow = ko.observableArray([]).extend({ rateLimit: 0 });
         this.virtualGridRow(initialRows);
@@ -87,7 +87,7 @@ export class viewModel implements VirtualGrid.IKnockoutVirtualGrid {
     readonly: KnockoutObservable<boolean>;
     metadata: any;
     */
-    private convert(data: VirtualGrid.IVirtualGridRow<any>[]) : VirtualGrid.IVirtualGridLayoutRow[] {
+    private initialize(data: VirtualGrid.IVirtualGridRow<any>[]) : VirtualGrid.IVirtualGridLayoutRow[] {
         if (!data || data.length === 0) return [];
 
         var result: VirtualGrid.IVirtualGridLayoutRow[] = [],
