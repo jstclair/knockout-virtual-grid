@@ -5,7 +5,11 @@
     "John St. Clair <stclairjohn@gmail.com>"
   ],
   "description": "A virtualizing grid container for Knockout",
-  "main": "index.js",
+  "main": [
+      "out/knockout-virtual-grid.css",
+      "out/knockout-virtual-grid.html",
+      "out/knockout-virtual-grid.js"
+  ],
   "moduleType": [
     "amd"
   ],
@@ -15,7 +19,7 @@
     "grid"
   ],
   "license": "MIT",
-  "private": true,
+  "private": false,
   "ignore": [
     "**/.*",
     "node_modules",
