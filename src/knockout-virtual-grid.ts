@@ -46,8 +46,13 @@ export class viewModel implements VirtualGrid.IKnockoutVirtualGrid {
         // if max is lower than existing visible, then we have to re-init
         if (init.maxRows < this.layout.rows() || init.maxColumns < this.layout.columns()) {
             console.log('[VG] re-initializing');
+            this.layout.maxRows = init.maxRows;
+            this.layout.maxColumns = init.maxColumns;
+            this.render();
         }
         else {
+            this.layout.maxRows = init.maxRows;
+            this.layout.maxColumns = init.maxColumns;
             this.render();
         }
     }
