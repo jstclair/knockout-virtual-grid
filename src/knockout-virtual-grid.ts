@@ -22,7 +22,7 @@ export class viewModel implements VirtualGrid.IKnockoutVirtualGrid {
         this.dataSource = params.dataSource;
 
         var data = params.dataSource(),
-            init = this.initialize(data);
+            init = this.measure(data);
 
         this.layout = new LayoutOffsetHelper(init.maxRows,
                                              init.maxColumns,
@@ -42,7 +42,7 @@ export class viewModel implements VirtualGrid.IKnockoutVirtualGrid {
     }
 
     private onNewData(rows: VirtualGrid.IVirtualGridRow<any>[]) {
-        var init = this.initialize(rows);
+        var init = this.measure(rows);
         // if max is lower than existing visible, then we have to re-init
         if (init.maxRows < this.layout.rows() || init.maxColumns < this.layout.columns()) {
             console.log('[VG] re-initializing');
@@ -50,15 +50,21 @@ export class viewModel implements VirtualGrid.IKnockoutVirtualGrid {
         else {
             this.render();
         }
-
     }
 
-    private initialize(data: VirtualGrid.IVirtualGridRow<any>[]) {
-        // for now, assume grid is rectangular
+    private measure(data: VirtualGrid.IVirtualGridRow<any>[]) {
         var result: any = {
-            maxRows: data.length,
-            maxColumns: data[0].columns.length
+            maxRows: 0,
+            maxColumns: 0
         };
+
+        if (data && data.length > 0) {
+            result.maxRows = data.length;
+            // for now, assume grid is rectangular
+            if (data[0].columns && data[0].columns.length > 0){
+                result.maxColumns = data[0].columns.length;
+            }
+        }
 
         console.log('[VG] initialize: %o', result);
         return result;
