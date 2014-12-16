@@ -68,7 +68,6 @@ at the demo project [vg-demo](https://github.com/jstclair/vg-demo).
 To publish, run:
 
 ```shell
-git add bower.json
 git add -f out/*
 git checkout head
 git commit -m "Version {version} for distribution"
