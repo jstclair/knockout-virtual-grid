@@ -27,6 +27,7 @@
     "requirejs": "~2.1.15",
     "requirejs-text": "~2.0.12",
     "knockout": "~3.2.0",
-    "lodash": "~2.4.1"
+    "lodash": "~2.4.1",
+    "knockout-editable-cell": "~2.1.1"
   }
 }

@@ -1,5 +1,6 @@
 /// <reference path="./_references.d.ts" />
 /// <amd-dependency path="text!./knockout-virtual-grid.html" />
+/// <amd-dependency path="../bower_components/knockout-editable-cell/out/editableCell" />
 
 import ko = require('knockout');
 
@@ -130,7 +131,7 @@ export class viewModel implements VirtualGrid.IKnockoutVirtualGrid {
                 rowCss: ko.observable(r.css && r.css.length > 0 ? r.css.join(' ') : ''),
                 fixedColumns: ko.observableArray([]),
                 format: (v: any) => v.toString(),
-                editable: ko.observable(false)
+                editable: ko.observable(true)
             });
         }
 
