@@ -145,20 +145,23 @@ export class viewModel implements VirtualGrid.IKnockoutVirtualGrid {
 
         if (!source || source.length === 0) return;
 
-        var rowOffset = this.layout.row(),
-            colOffset = this.layout.column(),
+        var offset = {
+                row: this.layout.row(),
+                column: this.layout.column()
+            },
+            start = {
+                row: Math.min(offset.row, this.layout.maxRows - this.layout.rows()),
+                column: Math.min(offset.column, this.layout.maxColumns - this.layout.columns())
+            },
+            end = {
+                row: Math.min(start.row + this.layout.rows(), this.layout.maxRows),
+                column: Math.min(start.column + this.layout.columns(), this.layout.maxColumns)
+            };
 
-            startRow = Math.min(rowOffset, source.length - this.layout.rows()),
-            startCol = Math.min(colOffset, source[0].columns.length - this.layout.columns()),
+        console.log('[VG] render: source: [%d, %d ], start: %o, end: %o',
+            source.length, source[0].columns.length, start, end);
 
-            endRow = Math.min(startRow + this.layout.rows(), source.length),
-            endColumn = Math.min(startCol + this.layout.columns(), source[0].columns.length);
-
-        console.log('[VG] render: source - rows: %d, cols: %d', source.length, source[0].columns.length);
-        console.log('[VG] render: start - row: %d, col: %d', startRow, startCol);
-        console.log('[VG] render: end   - row: %d, col: %d', endRow, endColumn);
-
-        for (var targetRowIndex = 0, i = startRow; i < endRow; i++, targetRowIndex++) {
+        for (var targetRowIndex = 0, i = start.row; i < end.row; i++, targetRowIndex++) {
             // copy values from source to target
             var r = source[i],
                 targetRow = target[targetRowIndex],
@@ -166,7 +169,7 @@ export class viewModel implements VirtualGrid.IKnockoutVirtualGrid {
 
             targetRow.rowCss(r.css && r.css.length > 0 ? r.css.join(' ') : '');
 
-            for(var targetColumnIndex = 0, j = startCol; j < endColumn; j++, targetColumnIndex++){
+            for(var targetColumnIndex = 0, j = start.column; j < end.column; j++, targetColumnIndex++){
                 // copy values from source[i].columns[j] to target
                 var c = r.columns[j],
                     targetColumn = targetColumns[targetColumnIndex];
