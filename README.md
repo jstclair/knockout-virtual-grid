@@ -6,23 +6,24 @@ In order to for the table to provide a 'native' table appearance (for both arrow
 
 ## Demo
 
-[Knockout Virtual Grid Demo](http://jsbin.com/kezoru/1/) (via JSBin - click the HTML and Javascript buttons to see the code)
+[Knockout Virtual Grid Demo](http://jsbin.com/kezoru/1/) (via JSBin - click the 'Edit in JSBin' button to see the code)
 
 ## Requirements
-Knockout Virtual Grid is designed to work with Knockout 3.2 (via the new "component" support) and RequireJS.
 
-## Installation
+`Knockout Virtual Grid` is designed to work with Knockout 3.2 (via the new "component" support) and RequireJS.
 
-You can install it via **bower**:
+## Installation & Usage
+
+* Install it via `bower`:
 
 ```shell
 bower install --save knockout-virtual-grid
 ```
 
-Next, you need to register Knockout Virtual Grid and its dependencies in RequireJs.
-One way is via a global requirejs configuration object (shown below).
+* Second, register `Knockout Virtual Grid` (and its dependencies) via RequireJs.
+One way is via a global `requirejs` configuration object (shown below).
 
-> NOTE: the path key **must** match the name shown below
+> NOTE: the `paths` and `shim` keys **must** match the name shown below
 
 ```javascript
 requirejs.config({
@@ -38,7 +39,7 @@ requirejs.config({
 });
 ```
 
-You also need to add a reference to its stylesheet:
+* Add a reference to the `Knockout Virtual Grid` stylesheet:
 
 ```html
 <html>
@@ -46,7 +47,7 @@ You also need to add a reference to its stylesheet:
     <link href="bower_components/knockout-virtual-grid/out/knockout-virtual-grid.min.css" rel="stylesheet" />
 ```
 
-Then, you need to register it as a Knockout component in your project:
+* Register it as a Knockout component in your project:
 
 ```javascript
 ko.components.register('virtual-grid', {
@@ -54,13 +55,20 @@ ko.components.register('virtual-grid', {
 });
 ```
 
-Finally, you can **use** Knockout Virtual Grid in a view by adding the component,
+* Finally, you can **use** `Knockout Virtual Grid` in a view by adding the component,
 and populating its parameters:
 
 ~~~ html
 <virtual-grid params="dataSource: myDataSource"></virtual-grid>
 ~~~
 
+The dataSource is expected to be a `ko.observableArray` containing [VirtualGrid.IVirtualGridRow](https://github.com/jstclair/knockout-virtual-grid/blob/v0.0.5/out/knockout-virtual-grid.d.ts)s.
+
+> TypeScript users: you can add a reference to the included `d.ts` file:
+
+```html
+/// <reference path="bower_components/knockout-virtual-grid/out/knockout-virtual-grid.d.ts" />
+```
 
 ## Documentation
 
