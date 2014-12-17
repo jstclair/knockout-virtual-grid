@@ -4,6 +4,10 @@ Knockout Virtual Grid is a Knockout component for working with large amounts of 
 
 In order to for the table to provide a 'native' table appearance (for both arrow-key navigation and editing), it uses [editableCell](https://github.com/gnab/editableCell).
 
+## Demo
+
+[Knockout Virtual Grid Demo](http://jsbin.com/kezoru/1/) (via JSBin - click the HTML and Javascript buttons to see the code)
+
 ## Requirements
 Knockout Virtual Grid is designed to work with Knockout 3.2 (via the new "component" support) and RequireJS.
 
@@ -15,19 +19,21 @@ You can install it via **bower**:
 bower install --save knockout-virtual-grid
 ```
 
-Next, you need to register it in RequireJs. One way is via the requirejs configuration object (shown below),
-but you can adapt it to your needs:
+Next, you need to register Knockout Virtual Grid and its dependencies in RequireJs.
+One way is via a global requirejs configuration object (shown below).
+
+> NOTE: the path key **must** match the name shown below
 
 ```javascript
 requirejs.config({
     paths: {
         knockout: 'bower_components/knockout/dist/knockout',
         editablecell: 'bower_components/knockout-editable-cell/out/editableCell',
-        virtualgrid: 'bower_components/knockout-virtual-grid/out/knockout-virtual-grid'
+        'src/knockout-virtual-grid': 'bower_components/knockout-virtual-grid/out/knockout-virtual-grid'
     },
     shim: {
         editablecell: { deps: ['knockout'] },
-        virtualgrid: { deps: ['knockout', 'editablecell'] }
+        'src/knockout-virtual-grid': { deps: ['knockout', 'editablecell'] }
     }
 });
 ```
@@ -37,32 +43,33 @@ You also need to add a reference to its stylesheet:
 ```html
 <html>
     <head>
-    <link href="bower_components/knockout-virtual-grid/out/knockout-virtual-grid.css" rel="stylesheet" />
+    <link href="bower_components/knockout-virtual-grid/out/knockout-virtual-grid.min.css" rel="stylesheet" />
 ```
 
 Then, you need to register it as a Knockout component in your project:
 
 ```javascript
 ko.components.register('virtual-grid', {
-    viewModel: { require: 'virtualgrid' },
-    template: { require: 'text!bower_components/knockout-virtual-grid/out/knockout-virtual-grid.html' }
+    { require: 'src/knockout-virtual-grid' }
 });
 ```
 
-Finally, you can use Knockout Virtual Grid in a view by adding the component,
+Finally, you can **use** Knockout Virtual Grid in a view by adding the component,
 and populating its parameters:
 
 ~~~ html
 <virtual-grid params="dataSource: myDataSource"></virtual-grid>
 ~~~
 
-### Further Documentation to come!
 
-## Example
+## Documentation
 
-Until the remainder of the functionality and documentation is in place, you can look
-at the demo project [vg-demo](https://github.com/jstclair/vg-demo).
+> NOTE: Futher documentation to come!
 
+Until the remainder of the functionality and documentation is in place, you can
+look at the [live demo](http://jsbin.com/kezoru/1/), or at the live demo's base project [vg-demo](https://github.com/jstclair/vg-demo).
+
+<!--
 ## Publishing to Github
 
 To publish, run:
@@ -75,3 +82,4 @@ git tag -a v{version} -m "Add tag v{verson}"
 git checkout master
 git push origin --tags
 ```
+-->
