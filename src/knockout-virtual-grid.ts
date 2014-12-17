@@ -1,7 +1,5 @@
 /// <reference path="./_references.d.ts" />
 /// <amd-dependency path="text!./knockout-virtual-grid.html" />
-/// <amd-dependency path="../bower_components/knockout-editable-cell/out/editableCell" />
-
 import ko = require('knockout');
 
 export var template: string = require('text!./knockout-virtual-grid.html');

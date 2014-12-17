@@ -25,6 +25,34 @@ gulp.task('clean', function() {
     del(['./out/*', '.tmp/**', 'src/*.js', 'src/*.js.map'], { dot: true});
 });
 
+var requireOptimizationConfig = {
+    baseUrl: '.',
+    out: 'scripts.js',
+    include: [
+        'requireLib',
+        'text',
+        'knockout',
+        'editablecell'
+    ],
+    paths: {
+        requireLib: 'bower_components/requirejs/require',
+        text: 'bower_components/requirejs-text/text',
+        jquery: 'bower_components/jquery/dist/jquery',
+        knockout: 'bower_components/knockout/dist/knockout',
+        editablecell: "bower_components/knockout-editable-cell/out/editableCell"
+    },
+    shim: {
+        editablecell: {
+            deps: ['knockout', 'jquery']
+        }
+    },
+    bundles: {
+        'knockout-virtual-grid': [
+            'src/knockout-virtual-grid'
+        ]
+    }
+};
+
 gulp.task('ts', function() {
     return gulp.src(['src/*.ts'])
         .pipe($.tsc({
@@ -40,14 +68,13 @@ gulp.task('ts', function() {
 });
 
 gulp.task('js', ['ts'], function() {
-    return gulp.src(['src/*.js'])
-        .pipe($.concat('knockout-virtual-grid.js'))
-        .pipe(gulp.dest(paths.out))
-        .pipe($.uglify())
-        .pipe($.rename({
-            extname: '.min.js'
-        }))
-        .pipe(gulp.dest(paths.out));
+    return $.requirejsBundler(requireOptimizationConfig)
+    .pipe($.ignore.exclude('scripts.js'))
+    .pipe($.concat('knockout-virtual-grid.js'))
+    .pipe(gulp.dest(paths.out))
+    .pipe($.uglify())
+    .pipe($.rename({ extname: '.min.js'}))
+    .pipe(gulp.dest(paths.out));
 });
 
 gulp.task('copy-typedefs', function() {
