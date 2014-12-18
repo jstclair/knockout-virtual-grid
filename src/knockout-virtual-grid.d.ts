@@ -27,6 +27,6 @@ declare module VirtualGrid {
 
     export interface ISupportVirtualGridEditing<T,K> {
         onEdit: (value: T, info: IVirtualGridCellInfo<K>) => boolean;
-        onAfterEdit?: (previousValue: T, value: T, info: IVirtualGridCellInfo<K>, cell: HTMLElement) => void;
+        onAfterEdit?: (value: IAfterEditValues, info: IVirtualGridCellInfo<K>, cell: HTMLElement) => void;
     }
 }

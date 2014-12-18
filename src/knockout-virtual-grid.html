@@ -9,7 +9,7 @@
 
             <!-- ko if: $data.editable -->
             <!-- ko foreach: $data.columns -->
-            <td class="vg-c" data-bind="css: css, editableCell: value, cellHTML: $parent.format(value()), cellReadOnly: readonly"></td>
+            <td class="vg-c" data-bind="css: css, editableCell: value, cellHTML: $parent.format(underlyingValue()), cellReadOnly: readonly"></td>
             <!-- /ko -->
             <!-- /ko -->
             <!-- ko ifnot: $data.editable -->

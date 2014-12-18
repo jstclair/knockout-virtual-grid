@@ -12,6 +12,9 @@ export class viewModel implements VirtualGrid.IKnockoutVirtualGrid {
     private subscriptions: any[];
     private layout: LayoutOffsetHelper;
 
+    private onEdit: (value: any, info: VirtualGrid.IVirtualGridCellInfo<any>) => boolean;
+    private onAfterEdit: (value: VirtualGrid.IAfterEditValues, info: VirtualGrid.IVirtualGridCellInfo<any>, cell: HTMLElement) => void;
+
     constructor(params: VirtualGrid.IKnockoutVirtualGridBindingParameters) {
         console.log('[KnockoutVirtualGrid] %o', params);
         if (!params || !params.dataSource) {
@@ -19,6 +22,8 @@ export class viewModel implements VirtualGrid.IKnockoutVirtualGrid {
         }
         this.tableCss = ko.observable<string>(params.css || '');
         this.dataSource = params.dataSource;
+        this.onEdit = params.onEdit || this.handleOnEdit;
+        this.onAfterEdit = params.onAfterEdit || this.handleOnAfterEdit;
 
         var data = params.dataSource(),
             init = this.measure(data);
@@ -38,6 +43,15 @@ export class viewModel implements VirtualGrid.IKnockoutVirtualGrid {
             this.layout.changed.subscribe(() => this.render()),
             this.dataSource.subscribe((rows: VirtualGrid.IVirtualGridRow<any>[]) => this.onNewData(rows))
         ];
+    }
+
+    private handleOnEdit(value: any, info: VirtualGrid.IVirtualGridCellInfo<any>): boolean {
+        console.debug('[VG] base.handleOnEdit');
+        return true;
+    }
+
+    private handleOnAfterEdit(value: VirtualGrid.IAfterEditValues, info: VirtualGrid.IVirtualGridCellInfo<any>, cell: HTMLElement) : void {
+        console.debug('[VG] base.handleOnAfterEdit');
     }
 
     private onNewData(rows: VirtualGrid.IVirtualGridRow<any>[]) {
@@ -113,15 +127,7 @@ export class viewModel implements VirtualGrid.IKnockoutVirtualGrid {
 
             for (var j = startCol; j < maxColumns; j++){
                 c = r.columns[j];
-
-                columns.push({
-                    columnIndex: j,
-                    rowIndex: i,
-                    value: ko.observable(c.value),
-                    css: ko.observable(c.css && c.css.length > 0 ? c.css.join(' ') : ''),
-                    readonly: ko.observable(false),
-                    metadata: {}
-                });
+                columns.push(this.getColumn(c.value, i, j, c.css));
             }
 
             result.push({
@@ -139,9 +145,59 @@ export class viewModel implements VirtualGrid.IKnockoutVirtualGrid {
         return result;
     }
 
+    private getColumn(value: any, row: number, col: number, css?: string[]): VirtualGrid.IVirtualGridLayoutColumn<any> {
+        var v = ko.observable(value);
+        var column = {
+            columnIndex: col,
+            rowIndex: row,
+            underlyingValue: v,
+            value: ko.computed({
+                read: () => {
+                    return column.underlyingValue();
+                    },
+                write: (newValue: any) => {
+                    var current = column.underlyingValue.peek();
+                    if (newValue === current) return;
+
+                    var element= arguments.length > 1 ? arguments[1] : undefined,
+                    cell: HTMLTableCellElement = element ? element.cell : undefined,
+                    cellInfo: any = {
+                        metadata: column.metadata,
+                        rowIndex: column.rowIndex,
+                        columnIndex: column.columnIndex
+                    },
+                    didEdit = false;
+
+                    try {
+                        didEdit = this.onEdit(newValue, cellInfo);
+                        if (didEdit) {
+                            column.underlyingValue(newValue);
+                        }
+                    } catch (e) {}
+
+                    var value: VirtualGrid.IAfterEditValues = {
+                        didEdit: didEdit,
+                        previous: current,
+                        value: newValue
+                    };
+
+                    this.onAfterEdit(value, cellInfo, cell);
+                },
+                deferEvaluation: true,
+                pure: true,
+                owner: this
+            }).extend({ rateLimit: 0 }),
+            css: ko.observable(css && css.length > 0 ? css.join(' ') : ''),
+            readonly: ko.observable(false),
+            metadata: {}
+        };
+
+        return column;
+    }
+
     private render() {
-        var source = this.dataSource(),
-            target = this.virtualGridRow();
+        var source = this.dataSource.peek(),
+            target = this.virtualGridRow.peek();
 
         if (!source || source.length === 0) return;
 
@@ -174,7 +230,7 @@ export class viewModel implements VirtualGrid.IKnockoutVirtualGrid {
                 var c = r.columns[j],
                     targetColumn = targetColumns[targetColumnIndex];
 
-                targetColumn.value(c.value);
+                targetColumn.underlyingValue(c.value);
                 targetColumn.css(c.css && c.css.length > 0 ? c.css.join(' ') : '');
             }
         }

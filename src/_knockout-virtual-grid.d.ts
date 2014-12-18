@@ -9,19 +9,26 @@ declare module VirtualGrid {
         column?: KnockoutObservable<number>;
     }
 
+    export interface IAfterEditValues {
+        didEdit: boolean;
+        previous: any;
+        value: any;
+    }
+
     export interface IKnockoutVirtualGridBindingParameters {
         dataSource: KnockoutObservable<VirtualGrid.IVirtualGridRow<any>[]>;
         css: string;
         offset?: IVirtualGridBindingOffset;
         layout?: IVirtualGridBindingLayout;
         onEdit?: (value: any, info: IVirtualGridCellInfo<any>) => boolean;
-        onAfterEdit?: (previousValue: any, value: any, info: IVirtualGridCellInfo<any>, cell: HTMLElement) => void;
+        onAfterEdit?: (value: IAfterEditValues, info: IVirtualGridCellInfo<any>, cell: HTMLElement) => void;
     }
 
     export interface IVirtualGridLayoutColumn<T> {
         columnIndex: number;
         rowIndex: number;
-        value: KnockoutObservable<T>;
+        underlyingValue: KnockoutObservable<T>;
+        value: KnockoutComputed<T>;
         css: KnockoutObservable<string>;
         readonly: KnockoutObservable<boolean>;
         metadata: any;
