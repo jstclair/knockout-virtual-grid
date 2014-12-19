@@ -223,6 +223,7 @@ export class viewModel implements VirtualGrid.IKnockoutVirtualGrid {
                 targetRow = target[targetRowIndex],
                 targetColumns = targetRow.columns();
 
+            targetRow.rowIndex = i;
             targetRow.rowCss(r.css && r.css.length > 0 ? r.css.join(' ') : '');
 
             for(var targetColumnIndex = 0, j = start.column; j < end.column; j++, targetColumnIndex++){
@@ -230,6 +231,10 @@ export class viewModel implements VirtualGrid.IKnockoutVirtualGrid {
                 var c = r.columns[j],
                     targetColumn = targetColumns[targetColumnIndex];
 
+                targetColumn.rowIndex = i;
+                targetColumn.columnIndex = j;
+                targetColumn.metadata = c.metadata;
+                
                 targetColumn.underlyingValue(c.value);
                 targetColumn.css(c.css && c.css.length > 0 ? c.css.join(' ') : '');
             }
