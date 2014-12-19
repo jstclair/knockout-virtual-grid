@@ -36,11 +36,12 @@ export class viewModel implements VirtualGrid.IKnockoutVirtualGrid {
 
         this.subscriptions = [
             this.layout.changed.subscribe(() => this.render()),
-            this.dataSource.subscribe(() => this.render())
+            this.dataSource.subscribe((rows: VirtualGrid.IVirtualGridRow<any>[]) => this.onNewData(rows))
         ];
     }
 
     private onNewData(rows: VirtualGrid.IVirtualGridRow<any>[]) {
+        console.log('[VG] onNewData...');
         var init = this.measure(rows);
         // if max is lower than existing visible, then we have to re-init
         if (init.maxRows < this.layout.rows() || init.maxColumns < this.layout.columns()) {
