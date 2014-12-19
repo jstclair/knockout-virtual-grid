@@ -6,7 +6,9 @@ In order to for the table to provide a 'native' table appearance (for both arrow
 
 ## Demo
 
-[Knockout Virtual Grid Demo](http://jsbin.com/kezoru/1/) (via JSBin - click the 'Edit in JSBin' button to see the code)
+[Knockout Virtual Grid Demo](http://jsbin.com/roheqo/1/) (via JSBin - click the 'Edit in JSBin' button to see the code)
+
+> Latest demo now supports editing!
 
 ## Requirements
 
@@ -77,17 +79,6 @@ The dataSource is expected to be a `ko.observableArray` containing [VirtualGrid.
 Until the remainder of the functionality and documentation is in place, you can
 look at the [live demo](http://jsbin.com/kezoru/1/), or at the live demo's base project [vg-demo](https://github.com/jstclair/vg-demo).
 
-<!--
-## Publishing to Github
 
-To publish, run:
-
-```shell
-git add -f out/*
-git checkout head
-git commit -m "Version {version} for distribution"
-git tag -a v{version} -m "Add tag v{verson}"
-git checkout master
-git push origin --tags
-```
--->
+### Editing (new!)
+_Coming soon!_
