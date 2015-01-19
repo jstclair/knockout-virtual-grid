@@ -38,6 +38,7 @@ var requireOptimizationConfig = {
         requireLib: 'bower_components/requirejs/require',
         text: 'bower_components/requirejs-text/text',
         jquery: 'bower_components/jquery/dist/jquery',
+        lodash: "bower_components/lodash/dist/lodash",
         knockout: 'bower_components/knockout/dist/knockout',
         editablecell: "bower_components/knockout-editable-cell/out/editableCell"
     },
