@@ -40,11 +40,15 @@ var requireOptimizationConfig = {
         jquery: 'bower_components/jquery/dist/jquery',
         lodash: "bower_components/lodash/dist/lodash",
         knockout: 'bower_components/knockout/dist/knockout',
-        editablecell: "bower_components/knockout-editable-cell/out/editableCell"
+        editablecell: "bower_components/knockout-editable-cell/out/editableCell",
+        resizeSensor: "bower_components/css-element-queries/src/ResizeSensor"
     },
     shim: {
         editablecell: {
             deps: ['knockout', 'jquery']
+        },
+        resizeSensor: {
+            exports: 'ResizeSensor'
         }
     },
     bundles: {

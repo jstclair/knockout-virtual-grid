@@ -1,5 +1,8 @@
 /// <reference path="./_references.d.ts" />
 /// <amd-dependency path="text!./knockout-virtual-grid.html" />
+/// <amd-dependency path="resizeSensor" />
+declare var ResizeSensor;
+
 import ko = require('knockout');
 import LayoutOffsetHelper = require('./layoutOffsetHelper');
 
