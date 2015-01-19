@@ -1,12 +1,11 @@
 /// <reference path="./_references.d.ts" />
 /// <amd-dependency path="text!./knockout-virtual-grid.html" />
-/// <amd-dependency path="resizeSensor" />
-declare var ResizeSensor;
 
 import ko = require('knockout');
 import _ = require('lodash');
 
 import LayoutOffsetHelper = require('./layoutOffsetHelper');
+import ResizeHelper = require('./resizeHelper');
 
 export var template: string = require('text!./knockout-virtual-grid.html');
 
@@ -19,7 +18,6 @@ export class viewModel implements VirtualGrid.IKnockoutVirtualGrid {
     private layout: LayoutOffsetHelper;
     private resizer: any;
 
-    private elem: HTMLElement;
     public onAfterRender: (elements: HTMLElement[]) => void;
 
     private onEdit: (value: any, info: VirtualGrid.IVirtualGridCellInfo<any>) => boolean;
@@ -59,33 +57,14 @@ export class viewModel implements VirtualGrid.IKnockoutVirtualGrid {
     private handleOnAfterRender(elements: HTMLElement[]) {
         console.log('[VG] onAfterRender: %o', elements);
         if (!elements || elements.length <= 1)
-            {
-                console.log('[VG] onAfterRender no go...');
-                return;
-            }
-
-        var elem = elements[1],
-            boundResize = this.onResize.bind(this),
-            debouncedResize = _.debounce(boundResize, 100);
-
-        this.elem = elem;
-        this.size = elem.getBoundingClientRect();
-
-        this.resizer = new ResizeSensor(elem, debouncedResize);
-    }
-
-    private size: ClientRect;
-
-    private onResize(){
-        var newSize: ClientRect = this.elem.getBoundingClientRect();
-        console.log('[VG] onResize: from %o to %o', this.size, newSize);
-        var vDiff = Math.abs(newSize.height - this.size.height),
-            hDiff = Math.abs(newSize.width - this.size.width);
-        console.log('[VG] onResize: vDiff %d, hDiff %d', vDiff, hDiff);
-
-        if (newSize && (vDiff > 23 || hDiff > 43)) {
-            this.handleResize(newSize);
+        {
+            console.log('[VG] onAfterRender no go...');
+            return;
         }
+
+        var elem = elements[1];
+        this.resizer = new ResizeHelper(elem, this.handleResize.bind(this));
+        this.resizer.onResize();
     }
 
     private handleResize(newSize: ClientRect) {
@@ -107,7 +86,6 @@ export class viewModel implements VirtualGrid.IKnockoutVirtualGrid {
         this.virtualGridRow(newRows);
 
         this.disposeRows(oldRows);
-        this.size = newSize;
 
         this.render();
     }
