@@ -88,6 +88,9 @@ class LayoutOffsetHelper {
       read: () => {
         return offsets[2]();
       },
+      write: (val: number) => {
+        offsets[2](val);
+      },
       deferEvaluation: true,
       owner: this
     }).extend({ rateLimit: 0 });
@@ -95,6 +98,9 @@ class LayoutOffsetHelper {
     this.columns = ko.computed({
       read: () => {
         return offsets[3]();
+      },
+      write: (val: number) => {
+        offsets[3](val);  
       },
       deferEvaluation: true,
       owner: this
