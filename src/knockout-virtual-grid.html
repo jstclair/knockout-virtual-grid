@@ -1,25 +1,29 @@
-<table class="vg-t" data-bind="css: tableCss">
-    <thead></thead>
-    <tbody>
-        <!-- ko foreach: virtualGridRow -->
-        <tr class="vg-r" data-bind="css: rowCss">
-            <!-- ko foreach: $data.fixedColumns -->
-            <td class="vg-c vg-f" data-bind="css: css, html: value"></td>
-            <!-- /ko -->
+<!-- ko template { afterRender: onAfterRender.bind($data) } -->
+<div class="vg-max">
+    <table class="vg-t" data-bind="css: tableCss">
+        <thead></thead>
+        <tbody>
+            <!-- ko foreach: virtualGridRow -->
+            <tr class="vg-r" data-bind="css: rowCss">
+                <!-- ko foreach: $data.fixedColumns -->
+                <td class="vg-c vg-f" data-bind="css: css, html: value"></td>
+                <!-- /ko -->
 
-            <!-- ko if: $data.editable -->
-            <!-- ko foreach: $data.columns -->
-            <td class="vg-c" data-bind="css: css, editableCell: value, cellHTML: $parent.format(underlyingValue()), cellReadOnly: readonly"></td>
+                <!-- ko if: $data.editable -->
+                <!-- ko foreach: $data.columns -->
+                <td class="vg-c" data-bind="css: css, editableCell: value, cellHTML: $parent.format(underlyingValue()), cellReadOnly: readonly"></td>
+                <!-- /ko -->
+                <!-- /ko -->
+                <!-- ko ifnot: $data.editable -->
+                <!-- ko foreach: $data.columns -->
+                <td class="vg-c" data-bind="css: css, html: $parent.format(value())"></td>
+                <!-- /ko -->
+                <!-- /ko -->
+            </tr>
             <!-- /ko -->
-            <!-- /ko -->
-            <!-- ko ifnot: $data.editable -->
-            <!-- ko foreach: $data.columns -->
-            <td class="vg-c" data-bind="css: css, html: $parent.format(value())"></td>
-            <!-- /ko -->
-            <!-- /ko -->
-        </tr>
-        <!-- /ko -->
-    </tbody>
-    <tfoot>
-    </tfoot>
-</table>
+        </tbody>
+        <tfoot>
+        </tfoot>
+    </table>
+</div>
+<!-- /ko -->

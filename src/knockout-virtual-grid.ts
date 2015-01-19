@@ -4,6 +4,8 @@
 declare var ResizeSensor;
 
 import ko = require('knockout');
+import _ = require('lodash');
+
 import LayoutOffsetHelper = require('./layoutOffsetHelper');
 
 export var template: string = require('text!./knockout-virtual-grid.html');
@@ -15,6 +17,10 @@ export class viewModel implements VirtualGrid.IKnockoutVirtualGrid {
     private dataSource: KnockoutObservable<VirtualGrid.IVirtualGridRow<any>[]>;
     private subscriptions: any[];
     private layout: LayoutOffsetHelper;
+    private resizer: any;
+
+    private elem: HTMLElement;
+    public onAfterRender: (elements: HTMLElement[]) => void;
 
     private onEdit: (value: any, info: VirtualGrid.IVirtualGridCellInfo<any>) => boolean;
     private onAfterEdit: (value: VirtualGrid.IAfterEditValues, info: VirtualGrid.IVirtualGridCellInfo<any>, cell: HTMLElement) => void;
@@ -28,6 +34,7 @@ export class viewModel implements VirtualGrid.IKnockoutVirtualGrid {
         this.dataSource = params.dataSource;
         this.onEdit = params.onEdit || this.handleOnEdit;
         this.onAfterEdit = params.onAfterEdit || this.handleOnAfterEdit;
+        this.onAfterRender = this.handleOnAfterRender;
 
         var data = params.dataSource(),
             init = this.measure(data);
@@ -47,6 +54,62 @@ export class viewModel implements VirtualGrid.IKnockoutVirtualGrid {
             this.layout.changed.subscribe(() => this.render()),
             this.dataSource.subscribe((rows: VirtualGrid.IVirtualGridRow<any>[]) => this.onNewData(rows))
         ];
+    }
+
+    private handleOnAfterRender(elements: HTMLElement[]) {
+        console.log('[VG] onAfterRender: %o', elements);
+        if (!elements || elements.length <= 1)
+            {
+                console.log('[VG] onAfterRender no go...');
+                return;
+            }
+
+        var elem = elements[1],
+            boundResize = this.onResize.bind(this),
+            debouncedResize = _.debounce(boundResize, 100);
+
+        this.elem = elem;
+        this.size = elem.getBoundingClientRect();
+
+        this.resizer = new ResizeSensor(elem, debouncedResize);
+    }
+
+    private size: ClientRect;
+
+    private onResize(){
+        var newSize: ClientRect = this.elem.getBoundingClientRect();
+        console.log('[VG] onResize: from %o to %o', this.size, newSize);
+        var vDiff = Math.abs(newSize.height - this.size.height),
+            hDiff = Math.abs(newSize.width - this.size.width);
+        console.log('[VG] onResize: vDiff %d, hDiff %d', vDiff, hDiff);
+
+        if (newSize && (vDiff > 23 || hDiff > 43)) {
+            this.handleResize(newSize);
+        }
+    }
+
+    private handleResize(newSize: ClientRect) {
+        var newHeight = newSize.height,
+            newWidth = newSize.width;
+
+        var cols = Math.floor(newWidth / 42),
+            rows = Math.floor(newHeight / 23);
+
+        console.log('[VG] handleResize: cols: (%d -> %d), rows: (%d -> %d)',
+            this.layout.rows(), cols, this.layout.columns(), rows);
+
+        this.layout.columns(cols);
+        this.layout.rows(rows);
+
+        var oldRows = this.virtualGridRow(),
+            newRows = this.initialize(this.dataSource());
+
+        this.virtualGridRow(newRows);
+
+        this.disposeRows(oldRows);
+        this.size = newSize;
+
+        this.render();
     }
 
     private handleOnEdit(value: any, info: VirtualGrid.IVirtualGridCellInfo<any>): boolean {
@@ -251,5 +314,21 @@ export class viewModel implements VirtualGrid.IKnockoutVirtualGrid {
             if (sub && sub.dispose) sub.dispose();
         }
         this.layout.dispose();
+        if (this.resizer && this.resizer.detach) {
+            this.resizer.detach();
+        }
+
+        this.disposeRows(this.virtualGridRow());
+
+    }
+
+    private disposeRows(rows: VirtualGrid.IVirtualGridLayoutRow[]){
+        for(var i = 0; i < rows.length; i++){
+            var columns = rows[i].columns();
+
+            for(var j = 0; j < columns.length; j++){
+                columns[j].value.dispose();
+            }
+        }
     }
 }
